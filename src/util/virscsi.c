@@ -47,6 +47,32 @@ struct _virUsedByInfo {
 };
 typedef struct _virUsedByInfo virUsedByInfo;
 
+
+/* Keep in sync with scsi/scsi_proto.h */
+typedef enum {
+    VIR_SCSI_DEVICE_TYPE_NONE = -1,
+    VIR_SCSI_DEVICE_TYPE_DISK = 0x00,
+    VIR_SCSI_DEVICE_TYPE_TAPE = 0x01,
+    VIR_SCSI_DEVICE_TYPE_PRINTER = 0x02,
+    VIR_SCSI_DEVICE_TYPE_PROCESSOR = 0x03,
+    VIR_SCSI_DEVICE_TYPE_WORM = 0x04,
+    VIR_SCSI_DEVICE_TYPE_ROM = 0x05,
+    VIR_SCSI_DEVICE_TYPE_SCANNER = 0x06,
+    VIR_SCSI_DEVICE_TYPE_MOD = 0x07,
+    VIR_SCSI_DEVICE_TYPE_MEDIUM_CHANGER = 0x08,
+    VIR_SCSI_DEVICE_TYPE_COMM = 0x09,
+    VIR_SCSI_DEVICE_TYPE_RAID = 0x0c,
+    VIR_SCSI_DEVICE_TYPE_ENCLOSURE = 0x0d,
+    VIR_SCSI_DEVICE_TYPE_RBC = 0x0e,
+    VIR_SCSI_DEVICE_TYPE_OSD = 0x11,
+    VIR_SCSI_DEVICE_TYPE_ZBC = 0x14,
+    VIR_SCSI_DEVICE_TYPE_WLUN = 0x1e,
+    VIR_SCSI_DEVICE_TYPE_NO_LUN = 0x7f,
+
+    VIR_SCSI_DEVICE_TYPE_LAST,
+} virSCSIDeviceType;
+
+
 struct _virSCSIDevice {
     unsigned int adapter;
     unsigned int bus;
@@ -126,6 +152,78 @@ virSCSIDeviceGetSgName(const char *sysfs_prefix,
     return NULL;
 }
 
+
+static int
+virSCSIDeviceGetType(const char *prefix,
+                     unsigned int adapter,
+                     unsigned int bus,
+                     unsigned int target,
+                     unsigned long long unit,
+                     virSCSIDeviceType *type)
+{
+    int intType;
+
+    if (virFileReadValueInt(&intType,
+                            "%s/%d:%u:%u:%llu/type",
+                            prefix, adapter, bus, target, unit) < 0)
+        return -1;
+
+    switch (intType) {
+    case VIR_SCSI_DEVICE_TYPE_DISK:
+    case VIR_SCSI_DEVICE_TYPE_TAPE:
+    case VIR_SCSI_DEVICE_TYPE_PRINTER:
+    case VIR_SCSI_DEVICE_TYPE_PROCESSOR:
+    case VIR_SCSI_DEVICE_TYPE_WORM:
+    case VIR_SCSI_DEVICE_TYPE_ROM:
+    case VIR_SCSI_DEVICE_TYPE_SCANNER:
+    case VIR_SCSI_DEVICE_TYPE_MOD:
+    case VIR_SCSI_DEVICE_TYPE_MEDIUM_CHANGER:
+    case VIR_SCSI_DEVICE_TYPE_COMM:
+    case VIR_SCSI_DEVICE_TYPE_RAID:
+    case VIR_SCSI_DEVICE_TYPE_ENCLOSURE:
+    case VIR_SCSI_DEVICE_TYPE_RBC:
+    case VIR_SCSI_DEVICE_TYPE_OSD:
+    case VIR_SCSI_DEVICE_TYPE_ZBC:
+    case VIR_SCSI_DEVICE_TYPE_WLUN:
+    case VIR_SCSI_DEVICE_TYPE_NO_LUN:
+        *type = intType;
+        break;
+
+    default:
+        virReportError(VIR_ERR_INTERNAL_ERROR,
+                       _("unknown SCSI device type: %x"),
+                       intType);
+        return -1;
+    }
+
+    return 0;
+}
+
+
+static char *
+virSCSIDeviceGetDevNameBlock(const char *prefix,
+                             unsigned int adapter,
+                             unsigned int bus,
+                             unsigned int target,
+                             unsigned long long unit)
+{
+    g_autoptr(DIR) dir = NULL;
+    struct dirent *entry;
+    g_autofree char *path = NULL;
+
+    path = g_strdup_printf("%s/%d:%u:%u:%llu/block",
+                           prefix, adapter, bus, target, unit);
+
+    if (virDirOpen(&dir, path) < 0)
+        return NULL;
+
+    if (virDirRead(dir, &entry, path) > 0)
+        return g_strdup(entry->d_name);
+
+    return NULL;
+}
+
+
 /* Returns device name (e.g. "sdc") on success, or NULL
  * on failure.
  */
@@ -136,25 +234,45 @@ virSCSIDeviceGetDevName(const char *sysfs_prefix,
                         unsigned int target,
                         unsigned long long unit)
 {
-    g_autoptr(DIR) dir = NULL;
-    struct dirent *entry;
-    g_autofree char *path = NULL;
     unsigned int adapter_id;
+    virSCSIDeviceType type;
     const char *prefix = sysfs_prefix ? sysfs_prefix : SYSFS_SCSI_DEVICES;
 
     if (virSCSIDeviceGetAdapterId(adapter, &adapter_id) < 0)
         return NULL;
 
-    path = g_strdup_printf("%s/%d:%u:%u:%llu/block", prefix, adapter_id, bus,
-                           target, unit);
-
-    if (virDirOpen(&dir, path) < 0)
+    if (virSCSIDeviceGetType(prefix, adapter_id,
+                             bus, target, unit, &type) < 0)
         return NULL;
 
-    if (virDirRead(dir, &entry, path) > 0)
-        return g_strdup(entry->d_name);
+    switch (type) {
+    case VIR_SCSI_DEVICE_TYPE_DISK:
+        return virSCSIDeviceGetDevNameBlock(prefix, adapter_id, bus, target, unit);
 
-    return NULL;
+    case VIR_SCSI_DEVICE_TYPE_TAPE:
+    case VIR_SCSI_DEVICE_TYPE_PRINTER:
+    case VIR_SCSI_DEVICE_TYPE_PROCESSOR:
+    case VIR_SCSI_DEVICE_TYPE_WORM:
+    case VIR_SCSI_DEVICE_TYPE_ROM:
+    case VIR_SCSI_DEVICE_TYPE_SCANNER:
+    case VIR_SCSI_DEVICE_TYPE_MOD:
+    case VIR_SCSI_DEVICE_TYPE_MEDIUM_CHANGER:
+    case VIR_SCSI_DEVICE_TYPE_COMM:
+    case VIR_SCSI_DEVICE_TYPE_RAID:
+    case VIR_SCSI_DEVICE_TYPE_ENCLOSURE:
+    case VIR_SCSI_DEVICE_TYPE_RBC:
+    case VIR_SCSI_DEVICE_TYPE_OSD:
+    case VIR_SCSI_DEVICE_TYPE_ZBC:
+    case VIR_SCSI_DEVICE_TYPE_WLUN:
+    case VIR_SCSI_DEVICE_TYPE_NO_LUN:
+    case VIR_SCSI_DEVICE_TYPE_NONE:
+    case VIR_SCSI_DEVICE_TYPE_LAST:
+    default:
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                       _("unsupported SCSI device type: %x"),
+                       type);
+        return NULL;
+    }
 }
 
 virSCSIDevice *
