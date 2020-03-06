@@ -224,6 +224,31 @@ virSCSIDeviceGetDevNameBlock(const char *prefix,
 }
 
 
+static char *
+virSCSIDeviceGetDevNameTape(const char *prefix,
+                            unsigned int adapter,
+                            unsigned int bus,
+                            unsigned int target,
+                            unsigned long long unit)
+{
+    g_autofree char *path = NULL;
+    g_autofree char *resolvedPath = NULL;
+    g_autoptr(GError) err = NULL;
+
+    path = g_strdup_printf("%s/%d:%u:%u:%llu/tape",
+                           prefix, adapter, bus, target, unit);
+
+    if (!(resolvedPath = g_file_read_link(path, &err))) {
+        virReportError(VIR_ERR_SYSTEM_ERROR,
+                       _("Unable to read link: %s"),
+                       err->message);
+        return NULL;
+    }
+
+    return g_path_get_basename(resolvedPath);
+}
+
+
 /* Returns device name (e.g. "sdc") on success, or NULL
  * on failure.
  */
@@ -250,6 +275,8 @@ virSCSIDeviceGetDevName(const char *sysfs_prefix,
         return virSCSIDeviceGetDevNameBlock(prefix, adapter_id, bus, target, unit);
 
     case VIR_SCSI_DEVICE_TYPE_TAPE:
+        return virSCSIDeviceGetDevNameTape(prefix, adapter_id, bus, target, unit);
+
     case VIR_SCSI_DEVICE_TYPE_PRINTER:
     case VIR_SCSI_DEVICE_TYPE_PROCESSOR:
     case VIR_SCSI_DEVICE_TYPE_WORM:

@@ -33,17 +33,33 @@ VIR_LOG_INIT("tests.scsitest");
 
 static char *virscsi_prefix;
 
+typedef struct {
+    const char *adapter;
+    unsigned int bus;
+    unsigned int target;
+    unsigned int unit;
+    const char *expectedName;
+} testGetDevNameData;
+
 static int
-test1(const void *data G_GNUC_UNUSED)
+testGetDevName(const void *opaque)
 {
+    const testGetDevNameData *data = opaque;
     g_autofree char *name = NULL;
 
     if (!(name = virSCSIDeviceGetDevName(virscsi_prefix,
-                                         "scsi_host1", 0, 0, 0)))
+                                         data->adapter,
+                                         data->bus,
+                                         data->target,
+                                         data->unit)))
         return -1;
 
-    if (STRNEQ(name, "sdh"))
+    if (STRNEQ(name, data->expectedName)) {
+        fprintf(stderr,
+                "SCSI dev name mismatch, expected %s got %s",
+                data->expectedName, name);
         return -1;
+    }
 
     return 0;
 }
@@ -200,15 +216,27 @@ mymain(void)
 
     CREATE_SYMLINK("0-0-0-0", "0:0:0:0");
     CREATE_SYMLINK("1-0-0-0", "1:0:0:0");
+    CREATE_SYMLINK("2-0-0-0", "2:0:0:0");
     CREATE_SYMLINK("sg0", "sg0");
+    CREATE_SYMLINK("sg3", "sg3");
     CREATE_SYMLINK("sg8", "sg8");
 
     VIR_FREE(virscsi_prefix);
 
     virscsi_prefix = g_strdup(tmpdir);
 
-    if (virTestRun("test1", test1, NULL) < 0)
-        ret = -1;
+#define TEST_GET_DEV_NAME(adapter, bus, target, unit, expectedName) \
+    do { \
+        testGetDevNameData data = {adapter, bus, target, unit, expectedName}; \
+        if (virTestRun("test getDevname " expectedName, \
+                       testGetDevName, &data) < 0) \
+            ret = -1; \
+    } while (0)
+
+    TEST_GET_DEV_NAME("scsi_host0", 0, 0, 0, "sda");
+    TEST_GET_DEV_NAME("scsi_host1", 0, 0, 0, "sdh");
+    TEST_GET_DEV_NAME("scsi_host2", 0, 0, 0, "st0");
+
     if (virTestRun("test2", test2, NULL) < 0)
         ret = -1;
 
