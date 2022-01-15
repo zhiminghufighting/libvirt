@@ -252,7 +252,6 @@ if conf.has('WITH_QEMU')
 endif
 
 tests += [
-  { 'name': 'commandtest' },
   { 'name': 'cputest', 'link_with': cputest_link_with, 'link_whole': cputest_link_whole },
   { 'name': 'domaincapstest', 'link_with': domaincapstest_link_with, 'link_whole': domaincapstest_link_whole },
   { 'name': 'domainconftest' },
