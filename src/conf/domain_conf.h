@@ -2881,6 +2881,16 @@ typedef enum {
     VIR_DOMAIN_IOMMU_MODEL_LAST
 } virDomainIOMMUModel;
 
+typedef enum {
+    VIR_IOMMU_SCALABLE_MODE_ABSENT,
+    VIR_IOMMU_SCALABLE_MODE_MODERN,
+    VIR_IOMMU_SCALABLE_MODE_LEGACY,
+    VIR_IOMMU_SCALABLE_MODE_OFF,
+
+    VIR_IOMMU_SCALABLE_MODE_LAST
+} virIOMMUScalableMode;
+VIR_ENUM_DECL(virIOMMUScalableMode);
+
 struct _virDomainIOMMUDef {
     virDomainIOMMUModel model;
     virTristateSwitch intremap;
@@ -2889,6 +2899,9 @@ struct _virDomainIOMMUDef {
     virTristateSwitch iotlb;
     unsigned int aw_bits;
     virDomainDeviceInfo info;
+    virTristateSwitch dma_drain;
+    virIOMMUScalableMode scalable_mode;
+    virTristateSwitch iommufd;
 };
 
 typedef enum {

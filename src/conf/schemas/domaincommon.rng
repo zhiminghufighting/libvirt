@@ -5985,7 +5985,26 @@
                 <ref name="uint8"/>
               </attribute>
             </optional>
-          </element>
+            <optional>
+              <attribute name="dma_drain">
+                <ref name="virOnOff"/>
+              </attribute>
+            </optional>
+            <optional>
+              <attribute name="scalable_mode">
+                <choice>
+                  <value>modern</value>
+                  <value>legacy</value>
+                  <value>off</value>
+                </choice>
+              </attribute>
+            </optional>
+            <optional>
+              <attribute name="iommufd">
+                <ref name="virOnOff"/>
+              </attribute>
+            </optional>
+           </element>
         </optional>
         <optional>
           <ref name="acpi"/>

@@ -1517,6 +1517,14 @@ VIR_ENUM_IMPL(virDomainLaunchSecurity,
               "s390-pv",
 );
 
+VIR_ENUM_IMPL(virIOMMUScalableMode,
+              VIR_IOMMU_SCALABLE_MODE_LAST,
+              "",
+              "modern",
+              "legacy",
+              "off",
+);
+
 typedef enum {
     VIR_DOMAIN_NET_VHOSTUSER_MODE_NONE,
     VIR_DOMAIN_NET_VHOSTUSER_MODE_CLIENT,
@@ -13631,6 +13639,18 @@ virDomainIOMMUDefParseXML(virDomainXMLOption *xmlopt,
                                      &iommu->caching_mode) < 0)
             return NULL;
 
+        if (virXMLPropTristateSwitch(driver, "dma_drain", VIR_XML_PROP_NONE,
+                                     &iommu->dma_drain) < 0)
+            return NULL;
+
+        if (virXMLPropEnum(driver, "scalable_mode", virIOMMUScalableModeTypeFromString,
+                           VIR_XML_PROP_NONE, &iommu->scalable_mode) < 0)
+            return NULL;
+
+        if (virXMLPropTristateSwitch(driver, "iommufd", VIR_XML_PROP_NONE,
+                                     &iommu->iommufd) < 0)
+            return NULL;
+
         if (virXMLPropTristateSwitch(driver, "iotlb", VIR_XML_PROP_NONE,
                                      &iommu->iotlb) < 0)
             return NULL;
@@ -21186,6 +21206,27 @@ virDomainIOMMUDefCheckABIStability(virDomainIOMMUDef *src,
                        virTristateSwitchTypeToString(src->caching_mode));
         return false;
     }
+    if (src->dma_drain != dst->dma_drain) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                       _("Target domain IOMMU device dma drain '%1$s' does not match source '%2$s'"),
+                       virTristateSwitchTypeToString(dst->dma_drain),
+                       virTristateSwitchTypeToString(src->dma_drain));
+        return false;
+    }
+    if (src->scalable_mode != dst->scalable_mode) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                       _("Target domain IOMMU device scalable mode '%1$s' does not match source '%2$s'"),
+                       virIOMMUScalableModeTypeToString(dst->scalable_mode),
+                       virIOMMUScalableModeTypeToString(src->scalable_mode));
+        return false;
+    }
+    if (src->iommufd != dst->iommufd) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                       _("Target domain IOMMU device iommufd '%1$s' does not match source '%2$s'"),
+                       virTristateSwitchTypeToString(dst->iommufd),
+                       virTristateSwitchTypeToString(src->iommufd));
+        return false;
+    }
     if (src->eim != dst->eim) {
         virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
                        _("Target domain IOMMU device eim value '%1$s' does not match source '%2$s'"),
@@ -27034,6 +27075,18 @@ virDomainIOMMUDefFormat(virBuffer *buf,
     if (iommu->caching_mode != VIR_TRISTATE_SWITCH_ABSENT) {
         virBufferAsprintf(&driverAttrBuf, " caching_mode='%s'",
                           virTristateSwitchTypeToString(iommu->caching_mode));
+    }
+    if (iommu->dma_drain != VIR_TRISTATE_SWITCH_ABSENT) {
+        virBufferAsprintf(&driverAttrBuf, " dma_drain='%s'",
+                          virTristateSwitchTypeToString(iommu->dma_drain));
+    }
+    if (iommu->scalable_mode != VIR_IOMMU_SCALABLE_MODE_ABSENT) {
+        virBufferAsprintf(&driverAttrBuf, " scalable_mode='%s'",
+                          virIOMMUScalableModeTypeToString(iommu->scalable_mode));
+    }
+    if (iommu->iommufd != VIR_TRISTATE_SWITCH_ABSENT) {
+        virBufferAsprintf(&driverAttrBuf, " iommufd='%s'",
+                          virTristateSwitchTypeToString(iommu->iommufd));
     }
     if (iommu->eim != VIR_TRISTATE_SWITCH_ABSENT) {
         virBufferAsprintf(&driverAttrBuf, " eim='%s'",
