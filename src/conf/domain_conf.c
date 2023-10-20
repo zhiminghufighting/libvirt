@@ -184,6 +184,7 @@ VIR_ENUM_IMPL(virDomainFeature,
               "ibs",
               "tcg",
               "async-teardown",
+              "iommufd",
 );
 
 VIR_ENUM_IMPL(virDomainCapabilitiesPolicy,
@@ -16556,6 +16557,7 @@ virDomainFeaturesDefParse(virDomainDef *def,
         case VIR_DOMAIN_FEATURE_PAE:
         case VIR_DOMAIN_FEATURE_VIRIDIAN:
         case VIR_DOMAIN_FEATURE_PRIVNET:
+        case VIR_DOMAIN_FEATURE_IOMMUFD:
             def->features[val] = VIR_TRISTATE_SWITCH_ON;
             break;
 
@@ -20621,6 +20623,7 @@ virDomainDefFeaturesCheckABIStability(virDomainDef *src,
         case VIR_DOMAIN_FEATURE_HTM:
         case VIR_DOMAIN_FEATURE_NESTED_HV:
         case VIR_DOMAIN_FEATURE_CCF_ASSIST:
+        case VIR_DOMAIN_FEATURE_IOMMUFD:
             if (src->features[i] != dst->features[i]) {
                 virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
                                _("State of feature '%1$s' differs: source: '%2$s', destination: '%3$s'"),
@@ -27234,6 +27237,7 @@ virDomainDefFormatFeatures(virBuffer *buf,
         case VIR_DOMAIN_FEATURE_PAE:
         case VIR_DOMAIN_FEATURE_VIRIDIAN:
         case VIR_DOMAIN_FEATURE_PRIVNET:
+        case VIR_DOMAIN_FEATURE_IOMMUFD:
             /* NOTE: This is for old style <opt/> booleans. New XML
              * should use the explicit state=on|off output below */
             switch ((virTristateSwitch) def->features[i]) {

@@ -10428,6 +10428,9 @@ qemuBuildCommandLine(virDomainObj *vm,
     if (qemuBuildMachineCommandLine(cmd, cfg, def, qemuCaps, priv) < 0)
         return NULL;
 
+    if (def->features[VIR_DOMAIN_FEATURE_IOMMUFD] == VIR_TRISTATE_SWITCH_ON)
+        virCommandAddArgList(cmd, "-object", "iommufd,id=iommufd0", NULL);
+
     qemuBuildAccelCommandLine(cmd, def);
 
     qemuBuildTSEGCommandLine(cmd, def);

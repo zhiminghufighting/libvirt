@@ -6769,6 +6769,11 @@
               </optional>
             </element>
           </optional>
+          <optional>
+            <element name="iommufd">
+              <empty/>
+            </element>
+          </optional>
         </interleave>
       </element>
     </optional>

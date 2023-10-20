@@ -237,6 +237,7 @@ qemuValidateDomainDefFeatures(const virDomainDef *def,
         case VIR_DOMAIN_FEATURE_CAPABILITIES:
         case VIR_DOMAIN_FEATURE_MSRS:
         case VIR_DOMAIN_FEATURE_LAST:
+        case VIR_DOMAIN_FEATURE_IOMMUFD:
             break;
         }
     }
