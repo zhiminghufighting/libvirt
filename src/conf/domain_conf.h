@@ -2904,6 +2904,8 @@ struct _virDomainIOMMUDef {
     virTristateSwitch dma_drain;
     virIOMMUScalableMode scalable_mode;
     virTristateSwitch iommufd;
+    virTristateSwitch pasid;
+    virTristateSwitch pasid_migration;
 };
 
 typedef enum {

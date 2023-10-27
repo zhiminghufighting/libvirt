@@ -6162,6 +6162,8 @@ qemuBuildIOMMUCommandLine(virCommand *cmd,
                                   "S:x-scalable-mode", iommu->scalable_mode != VIR_IOMMU_SCALABLE_MODE_ABSENT?
                                   virIOMMUScalableModeTypeToString(iommu->scalable_mode):NULL,
                                   "S:iommufd", iommu->iommufd == VIR_TRISTATE_SWITCH_ON?"iommufd0":NULL,
+                                  "T:x-pasid-mode", iommu->pasid,
+                                  "T:pasid-migration", iommu->pasid_migration,
                                   "S:eim", qemuOnOffAuto(iommu->eim),
                                   "T:device-iotlb", iommu->iotlb,
                                   "z:aw-bits", iommu->aw_bits,

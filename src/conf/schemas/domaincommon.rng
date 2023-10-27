@@ -6004,6 +6004,16 @@
                 <ref name="virOnOff"/>
               </attribute>
             </optional>
+            <optional>
+              <attribute name="pasid">
+                <ref name="virOnOff"/>
+              </attribute>
+            </optional>
+            <optional>
+              <attribute name="pasid_migration">
+                <ref name="virOnOff"/>
+              </attribute>
+            </optional>
            </element>
         </optional>
         <optional>

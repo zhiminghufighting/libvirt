@@ -13659,6 +13659,14 @@ virDomainIOMMUDefParseXML(virDomainXMLOption *xmlopt,
                                      &iommu->iommufd) < 0)
             return NULL;
 
+        if (virXMLPropTristateSwitch(driver, "pasid", VIR_XML_PROP_NONE,
+                                     &iommu->pasid) < 0)
+            return NULL;
+
+        if (virXMLPropTristateSwitch(driver, "pasid_migration", VIR_XML_PROP_NONE,
+                                     &iommu->pasid_migration) < 0)
+            return NULL;
+
         if (virXMLPropTristateSwitch(driver, "iotlb", VIR_XML_PROP_NONE,
                                      &iommu->iotlb) < 0)
             return NULL;
@@ -21252,6 +21260,22 @@ virDomainIOMMUDefCheckABIStability(virDomainIOMMUDef *src,
                        virTristateSwitchTypeToString(src->iommufd));
         return false;
     }
+    if (src->pasid != dst->pasid) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                       _("Target domain IOMMU device pasid '%s' "
+                         "does not match source '%s'"),
+                       virTristateSwitchTypeToString(dst->pasid),
+                       virTristateSwitchTypeToString(src->pasid));
+        return false;
+    }
+    if (src->pasid_migration != dst->pasid_migration) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                       _("Target domain IOMMU device pasid_migration '%s' "
+                         "does not match source '%s'"),
+                       virTristateSwitchTypeToString(dst->pasid_migration),
+                       virTristateSwitchTypeToString(src->pasid_migration));
+        return false;
+    }
     if (src->eim != dst->eim) {
         virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
                        _("Target domain IOMMU device eim value '%1$s' does not match source '%2$s'"),
@@ -27120,6 +27144,14 @@ virDomainIOMMUDefFormat(virBuffer *buf,
     if (iommu->iommufd != VIR_TRISTATE_SWITCH_ABSENT) {
         virBufferAsprintf(&driverAttrBuf, " iommufd='%s'",
                           virTristateSwitchTypeToString(iommu->iommufd));
+    }
+    if (iommu->pasid != VIR_TRISTATE_SWITCH_ABSENT) {
+        virBufferAsprintf(&driverAttrBuf, " pasid='%s'",
+                          virTristateSwitchTypeToString(iommu->pasid));
+    }
+    if (iommu->pasid_migration != VIR_TRISTATE_SWITCH_ABSENT) {
+        virBufferAsprintf(&driverAttrBuf, " pasid_migration='%s'",
+                          virTristateSwitchTypeToString(iommu->pasid_migration));
     }
     if (iommu->eim != VIR_TRISTATE_SWITCH_ABSENT) {
         virBufferAsprintf(&driverAttrBuf, " eim='%s'",
