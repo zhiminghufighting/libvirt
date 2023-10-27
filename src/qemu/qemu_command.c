@@ -4750,6 +4750,8 @@ qemuBuildPCIHostdevDevProps(const virDomainDef *def,
                               "s:id", dev->info->alias,
                               "p:bootindex", dev->info->effectiveBootIndex,
                               "S:failover_pair_id", failover_pair_id,
+                              "T:x-enable-migration", dev->migration,
+                              "S:iommufd", dev->iommufd == VIR_TRISTATE_SWITCH_ON?"iommufd0":NULL,
                               NULL) < 0)
         return NULL;
 
@@ -5003,6 +5005,8 @@ qemuBuildHostdevMediatedDevProps(const virDomainDef *def,
                               "S:display", qemuOnOffAuto(mdevsrc->display),
                               "B:ramfb", ramfb,
                               "p:bootindex", dev->info->bootIndex,
+                              "T:x-enable-migration", dev->migration,
+                              "S:iommufd", dev->iommufd == VIR_TRISTATE_SWITCH_ON?"iommufd0":NULL,
                               NULL) < 0)
         return NULL;
 

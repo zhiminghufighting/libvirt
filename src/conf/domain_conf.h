@@ -374,6 +374,8 @@ struct _virDomainHostdevDef {
     virDomainHostdevMode mode;
     virDomainStartupPolicy startupPolicy;
     bool managed;
+    virTristateSwitch migration;
+    virTristateSwitch iommufd;
     bool missing;
     bool readonly;
     bool shareable;

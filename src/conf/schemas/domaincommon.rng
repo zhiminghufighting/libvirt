@@ -6210,6 +6210,16 @@
         <ref name="virYesNo"/>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="migration">
+        <ref name="virOnOff"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="iommufd">
+        <ref name="virOnOff"/>
+      </attribute>
+    </optional>
     <choice>
       <ref name="hostdevsubsyspci"/>
       <ref name="hostdevsubsysusb"/>

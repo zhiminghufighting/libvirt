@@ -6206,6 +6206,14 @@ virDomainHostdevDefParseXMLSubsys(xmlNodePtr node,
                                         VIR_XML_PROP_NONE, &managed));
     virTristateBoolToBool(managed, &def->managed);
 
+    if (virXMLPropTristateSwitch(node, "migration", VIR_XML_PROP_NONE,
+                                 &def->migration) < 0)
+        return -1;
+
+    if (virXMLPropTristateSwitch(node, "iommufd", VIR_XML_PROP_NONE,
+                                 &def->iommufd) < 0)
+        return -1;
+
     model = virXMLPropString(node, "model");
 
     /* @type is passed in from the caller rather than read from the
@@ -20284,13 +20292,30 @@ virDomainHostdevDefCheckABIStability(virDomainHostdevDef *src,
         return false;
     }
 
-    if (src->mode == VIR_DOMAIN_HOSTDEV_MODE_SUBSYS &&
-        src->source.subsys.type != dst->source.subsys.type) {
-        virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
-                       _("Target host device subsystem %1$s does not match source %2$s"),
-                       virDomainHostdevSubsysTypeToString(dst->source.subsys.type),
-                       virDomainHostdevSubsysTypeToString(src->source.subsys.type));
-        return false;
+    if (src->mode == VIR_DOMAIN_HOSTDEV_MODE_SUBSYS) {
+        if (src->source.subsys.type != dst->source.subsys.type) {
+            virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                           _("Target host device subsystem %1$s does not match source %2$s"),
+                           virDomainHostdevSubsysTypeToString(dst->source.subsys.type),
+                           virDomainHostdevSubsysTypeToString(src->source.subsys.type));
+            return false;
+        }
+
+        if (src->migration != dst->migration) {
+            virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                           _("Target host device migration %1$s does not match source %2$s"),
+                           virTristateSwitchTypeToString(dst->migration),
+                           virTristateSwitchTypeToString(src->migration));
+            return false;
+        }
+
+        if (src->iommufd != dst->iommufd) {
+            virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                           _("Target host device iommufd %1$s does not match source %2$s"),
+                           virTristateSwitchTypeToString(dst->iommufd),
+                           virTristateSwitchTypeToString(src->iommufd));
+            return false;
+        }
     }
 
     if (!virDomainDeviceInfoCheckABIStability(src->info, dst->info))
@@ -26232,6 +26257,14 @@ virDomainHostdevDefFormat(virBuffer *buf,
     if (def->mode == VIR_DOMAIN_HOSTDEV_MODE_SUBSYS) {
         virBufferAsprintf(buf, " managed='%s'",
                           def->managed ? "yes" : "no");
+
+        if (def->migration != VIR_TRISTATE_SWITCH_ABSENT)
+            virBufferAsprintf(buf, " migration='%s'",
+                              virTristateSwitchTypeToString(def->migration));
+
+        if (def->iommufd != VIR_TRISTATE_SWITCH_ABSENT)
+            virBufferAsprintf(buf, " iommufd='%s'",
+                              virTristateSwitchTypeToString(def->iommufd));
 
         if (def->source.subsys.type == VIR_DOMAIN_HOSTDEV_SUBSYS_TYPE_SCSI &&
             scsisrc->sgio)
