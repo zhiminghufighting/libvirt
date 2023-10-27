@@ -4752,6 +4752,7 @@ qemuBuildPCIHostdevDevProps(const virDomainDef *def,
                               "S:failover_pair_id", failover_pair_id,
                               "T:x-enable-migration", dev->migration,
                               "S:iommufd", dev->iommufd == VIR_TRISTATE_SWITCH_ON?"iommufd0":NULL,
+                              "T:x-enable-dynamic-mmap", dev->dyn_mmap,
                               NULL) < 0)
         return NULL;
 
@@ -5007,6 +5008,7 @@ qemuBuildHostdevMediatedDevProps(const virDomainDef *def,
                               "p:bootindex", dev->info->bootIndex,
                               "T:x-enable-migration", dev->migration,
                               "S:iommufd", dev->iommufd == VIR_TRISTATE_SWITCH_ON?"iommufd0":NULL,
+                              "T:x-enable-dynamic-mmap", dev->dyn_mmap,
                               NULL) < 0)
         return NULL;
 

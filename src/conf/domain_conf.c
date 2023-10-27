@@ -6221,6 +6221,10 @@ virDomainHostdevDefParseXMLSubsys(xmlNodePtr node,
                                  &def->iommufd) < 0)
         return -1;
 
+    if (virXMLPropTristateSwitch(node, "dyn_mmap", VIR_XML_PROP_NONE,
+                                 &def->dyn_mmap) < 0)
+        return -1;
+
     model = virXMLPropString(node, "model");
 
     /* @type is passed in from the caller rather than read from the
@@ -20356,6 +20360,14 @@ virDomainHostdevDefCheckABIStability(virDomainHostdevDef *src,
                            virTristateSwitchTypeToString(src->iommufd));
             return false;
         }
+
+        if (src->dyn_mmap != dst->dyn_mmap) {
+            virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                           _("Target host device dyn_mmap %s does not match source %s"),
+                           virTristateSwitchTypeToString(dst->dyn_mmap),
+                           virTristateSwitchTypeToString(src->dyn_mmap));
+            return false;
+        }
     }
 
     if (!virDomainDeviceInfoCheckABIStability(src->info, dst->info))
@@ -26321,6 +26333,10 @@ virDomainHostdevDefFormat(virBuffer *buf,
         if (def->iommufd != VIR_TRISTATE_SWITCH_ABSENT)
             virBufferAsprintf(buf, " iommufd='%s'",
                               virTristateSwitchTypeToString(def->iommufd));
+
+        if (def->dyn_mmap != VIR_TRISTATE_SWITCH_ABSENT)
+            virBufferAsprintf(buf, " dyn_mmap='%s'",
+                              virTristateSwitchTypeToString(def->dyn_mmap));
 
         if (def->source.subsys.type == VIR_DOMAIN_HOSTDEV_SUBSYS_TYPE_SCSI &&
             scsisrc->sgio)

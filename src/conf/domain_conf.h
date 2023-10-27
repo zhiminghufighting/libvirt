@@ -376,6 +376,7 @@ struct _virDomainHostdevDef {
     bool managed;
     virTristateSwitch migration;
     virTristateSwitch iommufd;
+    virTristateSwitch dyn_mmap;
     bool missing;
     bool readonly;
     bool shareable;
