@@ -6656,6 +6656,18 @@ virQEMUCapsFillDomainFeatureHypervCaps(virQEMUCaps *qemuCaps,
                                sizeof(virDomainCapsFeatureHyperv));
 }
 
+static void
+virQEMUCapsFillDomainFeatureTDXCaps(virQEMUCaps *qemuCaps,
+                                    virDomainCaps *domCaps)
+{
+    if (domCaps->arch == VIR_ARCH_X86_64 &&
+        domCaps->virttype == VIR_DOMAIN_VIRT_KVM &&
+        virQEMUCapsGet(qemuCaps, QEMU_CAPS_TDX_GUEST) &&
+        virQEMUCapsGetKVMSupportsSecureGuest(qemuCaps) &&
+        virQEMUCapsGet(qemuCaps, QEMU_CAPS_MACHINE_CONFIDENTAL_GUEST_SUPPORT) &&
+        (STREQ(domCaps->machine, "q35") || STRPREFIX(domCaps->machine, "pc-q35-")))
+            domCaps->features[VIR_DOMAIN_CAPS_FEATURE_TDX] = VIR_TRISTATE_BOOL_YES;
+}
 
 int
 virQEMUCapsFillDomainCaps(virQEMUCaps *qemuCaps,
@@ -6716,6 +6728,7 @@ virQEMUCapsFillDomainCaps(virQEMUCaps *qemuCaps,
     virQEMUCapsFillDomainFeatureSGXCaps(qemuCaps, domCaps);
     virQEMUCapsFillDomainFeatureHypervCaps(qemuCaps, domCaps);
     virQEMUCapsFillDomainDeviceCryptoCaps(qemuCaps, crypto);
+    virQEMUCapsFillDomainFeatureTDXCaps(qemuCaps, domCaps);
 
     return 0;
 }

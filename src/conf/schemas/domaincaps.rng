@@ -317,6 +317,9 @@
       <optional>
         <ref name="hyperv"/>
       </optional>
+      <optional>
+        <ref name="tdx"/>
+      </optional>
     </element>
   </define>
 
@@ -359,6 +362,12 @@
 
   <define name="s390-pv">
     <element name="s390-pv">
+      <ref name="supported"/>
+    </element>
+  </define>
+
+  <define name="tdx">
+    <element name="tdx">
       <ref name="supported"/>
     </element>
   </define>
