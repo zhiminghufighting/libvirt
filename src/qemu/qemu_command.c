@@ -3383,6 +3383,15 @@ qemuBuildMemoryBackendProps(virJSONValue **backendProps,
 
         if (systemMemory)
             disableCanonicalPath = true;
+   } else if (!nvdimmPath &&
+        def->mem.source == VIR_DOMAIN_MEMORY_SOURCE_MEMFD_PRIVATE) {
+        backendType = "memory-backend-memfd-private";
+
+        if (useHugepage &&
+            (virJSONValueObjectAdd(&props, "b:hugetlb", useHugepage, NULL) < 0 ||
+             virJSONValueObjectAdd(&props, "U:hugetlbsize", pagesize << 10, NULL) < 0)) {
+            return -1;
+        }
     } else if (useHugepage || nvdimmPath || memAccess ||
                def->mem.source == VIR_DOMAIN_MEMORY_SOURCE_FILE) {
 
@@ -3511,6 +3520,7 @@ qemuBuildMemoryBackendProps(virJSONValue **backendProps,
         memAccess == VIR_DOMAIN_MEMORY_ACCESS_DEFAULT &&
         def->mem.source != VIR_DOMAIN_MEMORY_SOURCE_FILE &&
         def->mem.source != VIR_DOMAIN_MEMORY_SOURCE_MEMFD &&
+        def->mem.source != VIR_DOMAIN_MEMORY_SOURCE_MEMFD_PRIVATE &&
         !force) {
         /* report back that using the new backend is not necessary
          * to achieve the desired configuration */
@@ -3521,6 +3531,12 @@ qemuBuildMemoryBackendProps(virJSONValue **backendProps,
             !virQEMUCapsGet(priv->qemuCaps, QEMU_CAPS_OBJECT_MEMORY_MEMFD)) {
             virReportError(VIR_ERR_CONFIG_UNSUPPORTED, "%s",
                            _("this qemu doesn't support the memory-backend-memfd object"));
+            return -1;
+        } else if (STREQ(backendType, "memory-backend-memfd-private") &&
+                   !virQEMUCapsGet(priv->qemuCaps, QEMU_CAPS_OBJECT_MEMORY_MEMFD_PRIVATE)) {
+            virReportError(VIR_ERR_CONFIG_UNSUPPORTED, "%s",
+                           _("this qemu doesn't support the "
+                             "memory-backend-memfd-private object"));
             return -1;
         }
 

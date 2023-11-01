@@ -1399,6 +1399,7 @@ VIR_ENUM_IMPL(virDomainMemorySource,
               "file",
               "anonymous",
               "memfd",
+              "memfd-private",
 );
 
 VIR_ENUM_IMPL(virDomainMemoryAllocation,

@@ -489,6 +489,7 @@ typedef enum { /* virQEMUCapsFlags grouping marker for syntax-check */
     QEMU_CAPS_DEVICE_VFIO_AP, /* -device vfio-ap */
     QEMU_CAPS_DEVICE_ZPCI, /* -device zpci */
     QEMU_CAPS_OBJECT_MEMORY_MEMFD, /* -object memory-backend-memfd */
+    QEMU_CAPS_OBJECT_MEMORY_MEMFD_PRIVATE, /* -object memory-backend-memfd-private */
     QEMU_CAPS_OBJECT_MEMORY_MEMFD_HUGETLB, /* -object memory-backend-memfd.hugetlb */
     X_QEMU_CAPS_IOTHREAD_POLLING, /* -object iothread.poll-max-ns */
 

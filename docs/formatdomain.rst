@@ -1085,7 +1085,7 @@ Memory Backing
        </hugepages>
        <nosharepages/>
        <locked/>
-       <source type="file|anonymous|memfd"/>
+       <source type="file|anonymous|memfd|memfd-private"/>
        <access mode="shared|private"/>
        <allocation mode="immediate|ondemand" threads='8'/>
        <discard/>

@@ -510,6 +510,7 @@ VIR_ENUM_IMPL(virQEMUCaps,
               "vfio-ap", /* QEMU_CAPS_DEVICE_VFIO_AP */
               "zpci", /* QEMU_CAPS_DEVICE_ZPCI */
               "memory-backend-memfd", /* QEMU_CAPS_OBJECT_MEMORY_MEMFD */
+              "memory-backend-memfd-private", /* QEMU_CAPS_OBJECT_MEMORY_MEMFD_PRIVATE */
               "memory-backend-memfd.hugetlb", /* QEMU_CAPS_OBJECT_MEMORY_MEMFD_HUGETLB */
               "iothread.poll-max-ns", /* X_QEMU_CAPS_IOTHREAD_POLLING */
 
@@ -1325,6 +1326,7 @@ struct virQEMUCapsStringFlags virQEMUCapsObjectTypes[] = {
     { "vfio-ap", QEMU_CAPS_DEVICE_VFIO_AP },
     { "zpci", QEMU_CAPS_DEVICE_ZPCI },
     { "memory-backend-memfd", QEMU_CAPS_OBJECT_MEMORY_MEMFD },
+    { "memory-backend-memfd-private", QEMU_CAPS_OBJECT_MEMORY_MEMFD_PRIVATE },
     { "virtio-blk-pci-transitional", QEMU_CAPS_VIRTIO_PCI_TRANSITIONAL },
     { "virtio-blk-pci-non-transitional", QEMU_CAPS_VIRTIO_PCI_TRANSITIONAL },
     { "virtio-net-pci-transitional", QEMU_CAPS_VIRTIO_PCI_TRANSITIONAL },
@@ -1696,6 +1698,10 @@ static struct virQEMUCapsStringFlags virQEMUCapsObjectPropsMemoryBackendMemfd[] 
     { "hugetlb", QEMU_CAPS_OBJECT_MEMORY_MEMFD_HUGETLB },
 };
 
+static struct virQEMUCapsStringFlags virQEMUCapsObjectPropsMemoryBackendMemfdPrivate[] = {
+    { "hugetlb", QEMU_CAPS_OBJECT_MEMORY_MEMFD_HUGETLB },
+};
+
 static struct virQEMUCapsStringFlags virQEMUCapsObjectPropsMaxCPU[] = {
     { "unavailable-features", QEMU_CAPS_CPU_UNAVAILABLE_FEATURES },
     { "kvm-no-adjvtime", QEMU_CAPS_CPU_KVM_NO_ADJVTIME },
@@ -1709,6 +1715,9 @@ static virQEMUCapsObjectTypeProps virQEMUCapsObjectProps[] = {
     { "memory-backend-memfd", virQEMUCapsObjectPropsMemoryBackendMemfd,
       G_N_ELEMENTS(virQEMUCapsObjectPropsMemoryBackendMemfd),
       QEMU_CAPS_OBJECT_MEMORY_MEMFD },
+    { "memory-backend-memfd-private", virQEMUCapsObjectPropsMemoryBackendMemfdPrivate,
+      G_N_ELEMENTS(virQEMUCapsObjectPropsMemoryBackendMemfdPrivate),
+      QEMU_CAPS_OBJECT_MEMORY_MEMFD_PRIVATE },
     { "max-x86_64-cpu", virQEMUCapsObjectPropsMaxCPU,
       G_N_ELEMENTS(virQEMUCapsObjectPropsMaxCPU),
       QEMU_CAPS_X86_MAX_CPU },
@@ -6228,6 +6237,10 @@ virQEMUCapsFillDomainMemoryBackingCaps(virQEMUCaps *qemuCaps,
     if (virQEMUCapsGet(qemuCaps, QEMU_CAPS_OBJECT_MEMORY_MEMFD))
         VIR_DOMAIN_CAPS_ENUM_SET(memoryBacking->sourceType,
                                  VIR_DOMAIN_MEMORY_SOURCE_MEMFD);
+
+    if (virQEMUCapsGet(qemuCaps, QEMU_CAPS_OBJECT_MEMORY_MEMFD_PRIVATE))
+        VIR_DOMAIN_CAPS_ENUM_SET(memoryBacking->sourceType,
+                                 VIR_DOMAIN_MEMORY_SOURCE_MEMFD_PRIVATE);
 
     VIR_DOMAIN_CAPS_ENUM_SET(memoryBacking->sourceType,
                              VIR_DOMAIN_MEMORY_SOURCE_ANONYMOUS,

@@ -3982,6 +3982,7 @@ qemuProcessNeedHugepagesPath(virDomainDef *def,
         /* This needs a hugetlbfs mount. */
         return true;
     case VIR_DOMAIN_MEMORY_SOURCE_MEMFD:
+    case VIR_DOMAIN_MEMORY_SOURCE_MEMFD_PRIVATE:
         /* memfd works without a hugetlbfs mount */
         return false;
     case VIR_DOMAIN_MEMORY_SOURCE_NONE:

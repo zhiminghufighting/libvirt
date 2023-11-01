@@ -488,10 +488,11 @@ typedef enum {
 } virDomainDiskMirrorState;
 
 typedef enum {
-    VIR_DOMAIN_MEMORY_SOURCE_NONE = 0,  /* No memory source defined */
-    VIR_DOMAIN_MEMORY_SOURCE_FILE,      /* Memory source is set as file */
-    VIR_DOMAIN_MEMORY_SOURCE_ANONYMOUS, /* Memory source is set as anonymous */
-    VIR_DOMAIN_MEMORY_SOURCE_MEMFD,     /* Memory source is set as memfd */
+    VIR_DOMAIN_MEMORY_SOURCE_NONE = 0,      /* No memory source defined */
+    VIR_DOMAIN_MEMORY_SOURCE_FILE,          /* Memory source is set as file */
+    VIR_DOMAIN_MEMORY_SOURCE_ANONYMOUS,     /* Memory source is set as anonymous */
+    VIR_DOMAIN_MEMORY_SOURCE_MEMFD,         /* Memory source is set as memfd */
+    VIR_DOMAIN_MEMORY_SOURCE_MEMFD_PRIVATE, /* Memory source is set as private memfd */
 
     VIR_DOMAIN_MEMORY_SOURCE_LAST,
 } virDomainMemorySource;

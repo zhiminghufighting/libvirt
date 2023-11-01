@@ -794,6 +794,7 @@
                     <value>file</value>
                     <value>anonymous</value>
                     <value>memfd</value>
+                    <value>memfd-private</value>
                   </choice>
                 </attribute>
               </element>

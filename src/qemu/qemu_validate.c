@@ -820,6 +820,13 @@ qemuValidateDomainDefMemory(const virDomainDef *def,
         return -1;
     }
 
+    if (mem->source == VIR_DOMAIN_MEMORY_SOURCE_MEMFD_PRIVATE &&
+        !virQEMUCapsGet(qemuCaps, QEMU_CAPS_OBJECT_MEMORY_MEMFD_HUGETLB)) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED, "%s",
+                       _("hugepages is not supported with memfd-private memory source"));
+        return -1;
+    }
+
     /* We can't guarantee any other mem.access if no guest NUMA
      * nodes are defined, unless defaultRAMid is provided. */
     if (!defaultRAMid &&

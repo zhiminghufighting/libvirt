@@ -276,6 +276,7 @@ backing <formatdomain.html#memory-backing>`__ is supported.
          <value>anonymous</value>
          <value>file</value>
          <value>memfd</value>
+         <value>memfd-private</value>
        </enum>
      </memoryBacking>
      ...

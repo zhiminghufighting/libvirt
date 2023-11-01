@@ -172,6 +172,18 @@ memobject interface).
           ...
         </domain>
 
+   * memfd-private memory
+
+     ::
+
+        <domain>
+          ...
+          <memoryBacking>
+            <source type='memfd-private'/>
+          </memoryBacking>
+          ...
+        </domain>
+
    * File-backed memory
 
      ::
