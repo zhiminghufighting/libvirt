@@ -9761,7 +9761,6 @@ qemuBuildTDXCommandLine(virDomainObj *vm, virCommand *cmd,
     VIR_DEBUG("policy=0x%x", tdx->policy);
 
     if (qemuMonitorCreateObjectProps(&props, "tdx-guest", "lsec0",
-                                     "b:debug", !!(tdx->policy & 0x1),
                                      "b:sept-ve-disable", !!(tdx->policy & 0x10000000),
                                      "S:mrconfigid", tdx->mrconfigid,
                                      "S:mrowner", tdx->mrowner,
